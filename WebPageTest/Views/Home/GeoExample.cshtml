@@ -1,0 +1,138 @@
+﻿@model WebPageTest.Models.JSONToViewModel
+@{
+    ViewData["Title"] = "GeoExample";
+
+}
+
+<div>
+    <h2>WebPage IP Tester</h2>
+    <form method="post" id="formulario">
+        <div>
+            <input type="text" class="form-group" name="ip" id="ip" required placeholder="Type a valid IP" maxlength="15" />
+            <input type="submit" class="btn-group" value="TEST" />
+        </div>
+    </form>
+    <div>
+        <p id="demo">@ViewBag.mensaje</p>
+    </div>
+</div>
+
+<div>
+    <table>
+        <tr>
+            <th>Site IP: @Model.Ip</th>
+            <th>Type: @Model.Type</th>
+            <th>Country Code: @Model.CountryCode</th>
+            <th>Country Name: <br /> @Model.CountryName</th>
+            <th>Region Code: @Model.RegionCode</th>
+            <th>Region Name: @Model.RegionName</th>
+            <th>City: @Model.City</th>
+            <th>Zip Code: <br /> @Model.ZipCode</th>
+            <th>Latitude: @Model.Latitude</th>
+            <th>Longitude: @Model.Longitude</th>
+            <th>Security: Low Threat level</th>
+        </tr>
+    </table>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("formulario").addEventListener('submit', check);
+    });
+
+    function check(evento) {
+        evento.preventDefault();
+        var campo = document.getElementById("ip");
+        var palabra = document.getElementById("ip").value;
+
+        // Crear mensaje, en blanco para valor correcto
+        var msg = '';
+        if (palabra.length < 16 && palabra.length > 6) {
+            if (validarIpPuntos(palabra) === 1) {
+                if (validarIpNumeros(palabra) === 1) {
+                    this.submit(); //se realiza el envio
+                } else {
+                    alert("IPV4 NUMBER ERROR. \nThe valid numbers go from 255 to 0");
+                    return;
+                }
+            } else {
+                alert("INVALID IPV4 FORMAT. \nCheck your syntax, might be a mistake there");
+                return;
+            }
+        } else {
+            // Hay error, actualizar mensaje
+            alert("INVALID IPV4 LENGTH.\nLength of your input is too short or long.");
+            return;
+        }
+        campo.setCustomValidity(msg);
+    }
+
+    function validarIpPuntos(ip) {
+        var temp = 0;
+
+        for (var i = 0; i < ip.length; i++) {
+            if (ip.indexOf(".") != -1) {
+                temp++;
+                ip = ip.replace(".", "-");
+            }
+        }
+        //si cumple con tener los tres puntos, osea es IPV4
+        if (temp === 3) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    //Primero se necesita validar si tiene los 3 puntos.
+    function validarIpNumeros(ip) {
+        //var ip = "10.231.10.150";
+        var inicio = 0;
+        var final = ip.indexOf(".");
+        var cont = 0;
+        var numero = "";
+
+        for (var i = 0; i < 4; i++) { //cuatro vueltas, dado que es IPV6
+
+            if (ip.indexOf(".") != -1) {
+                numero = ip.substring(inicio, ip.indexOf("."));
+            } else {
+                numero = ip.substring(inicio, ip.length);
+            }
+
+            if (numero >= 0 && numero <= 255 && isNaN(numero) != true) {
+                cont++; //si el número esta en el rango del IPV4
+            }
+
+            inicio = ip.indexOf(".") + 1;
+            ip = ip.replace(".", "-"); //nos chingamos el "."
+        }
+
+        if (cont === 4) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    function enviarInfo(ip) {
+        var xhttp = new XMLHttpRequest();
+        var direccion = "https://localhost:44373/Home/GeoExample";
+
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                //document.getElementById("demo").innerHTML = this.responseText;
+            }
+        };
+        xhttp.open("POST", "direccion", true);
+        xhttp.send(ip);
+    }
+</script>
+
+
+<!--
+<div>
+    TempData["GeoCode"];
+</div>
+    <th>Language: Model.Location</th>
+-->
